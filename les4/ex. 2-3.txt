@@ -1,0 +1,24 @@
+SHOW SCHEMAS;
+USE `staff`;
+SHOW TABLES;
+
+#процедура, которая находит сотрудника по имени и фамилии
+delimiter //
+CREATE PROCEDURE find_employee (fam VARCHAR(20), name VARCHAR(20), OUT id_result INT(4))
+BEGIN
+SELECT `id` INTO id_result FROM `employees` WHERE `first_name` = fam AND `last_name` = name;
+END //
+delimiter ;
+
+#использование процедуры
+SET @my_id = 0;
+CALL find_employee('Минаков', 'Максим', @my_id);
+SELECT @my_id;
+SELECT * FROM `employees` WHERE `id` = @my_id;
+
+#Создание триггера - при поступлении сотрудника на работу выплачиваем 2 оклада - бонус и заносим об этом информацию в таблицу salary
+CREATE TRIGGER new_employee_bonus
+AFTER INSERT ON `employees`
+FOR EACH ROW
+INSERT INTO `salary` (`id_employee`, `sum`)
+VALUES  (NEW.id, NEW.salary * 2);
